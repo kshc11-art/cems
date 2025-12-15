@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<title>CJ Vocab v2.0</title>
+<link rel="manifest" href="manifest-cj.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+:root{--primary:#6366f1;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--bg:#0f172a;--bg2:#1e293b;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--chinese:#ef4444;--japanese:#8b5cf6}
+html{background:var(--bg);height:-webkit-fill-available}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available}
+.app{max-width:600px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom));z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;color:var(--muted);font-size:9px;cursor:pointer;text-decoration:none}
+.nav-item.active{color:var(--primary)}
+.nav-item svg{width:20px;height:20px;pointer-events:none}
+.page{display:none}.page.active{display:block}
+.page-header{margin-bottom:20px}.page-header h1{font-size:24px;font-weight:700;margin-bottom:4px}.page-header p{color:var(--muted);font-size:13px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;width:100%}
+.btn:active{transform:scale(.98)}.btn-primary{background:var(--primary);color:#fff}.btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}.btn-chinese{background:var(--chinese);color:#fff}.btn-japanese{background:var(--japanese);color:#fff}.btn-sm{padding:8px 14px;font-size:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat-grid-3{grid-template-columns:repeat(3,1fr)}.stat-grid-2{grid-template-columns:repeat(2,1fr)}
+.stat-item{text-align:center;padding:10px 6px;background:var(--bg);border-radius:10px}.stat-value{font-size:22px;font-weight:700;margin-bottom:2px}.stat-value.success{color:var(--success)}.stat-value.warning{color:var(--warning)}.stat-value.danger{color:var(--danger)}.stat-value.chinese{color:var(--chinese)}.stat-value.japanese{color:var(--japanese)}.stat-label{font-size:10px;color:var(--muted)}
+.progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px}.progress-fill{height:100%;border-radius:3px;transition:width .3s}.progress-text{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.type-tabs{display:flex;gap:8px;margin-bottom:14px}.type-tab{flex:1;padding:10px;background:var(--bg);border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600}.type-tab.active{border-color:var(--primary);background:rgba(99,102,241,.1);color:var(--primary)}.type-tab.chinese.active{border-color:var(--chinese);background:rgba(239,68,68,.1);color:var(--chinese)}.type-tab.japanese.active{border-color:var(--japanese);background:rgba(139,92,246,.1);color:var(--japanese)}
+.mode-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.mode-card{padding:12px 8px;background:var(--bg);border-radius:10px;text-align:center;cursor:pointer;border:2px solid transparent}.mode-card.active{border-color:var(--primary);background:rgba(99,102,241,.1)}.mode-card.chinese.active{border-color:var(--chinese);background:rgba(239,68,68,.1)}.mode-card.japanese.active{border-color:var(--japanese);background:rgba(139,92,246,.1)}.mode-card-icon{font-size:24px;margin-bottom:4px}.mode-card-title{font-size:12px;font-weight:600}
+.range-container{display:flex;align-items:center;gap:12px}.range-slider{flex:1;-webkit-appearance:none;height:5px;background:var(--border);border-radius:3px}.range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--primary);border-radius:50%}.range-value{font-size:16px;font-weight:700;min-width:50px;text-align:right}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px}.chip{padding:6px 12px;background:var(--bg);border-radius:16px;font-size:12px;cursor:pointer;border:1px solid var(--border)}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.upload-zone{display:block;border:2px dashed var(--border);border-radius:14px;padding:30px 16px;text-align:center;cursor:pointer}.upload-zone-icon{font-size:40px;margin-bottom:12px}.upload-zone p{color:var(--muted);font-size:13px}
+.flashcard-container{perspective:1000px;margin-bottom:16px;min-height:280px}
+.flashcard{position:relative;width:100%;height:280px;cursor:pointer;transform-style:preserve-3d;transition:transform .6s}
+.flashcard.flipped{transform:rotateY(180deg)}
+.flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:16px;padding:20px;display:flex;flex-direction:column;border:1px solid var(--border);box-shadow:0 16px 32px -10px rgba(0,0,0,.3)}
+.flashcard-back{transform:rotateY(180deg)}
+.flashcard-back-inner{opacity:0;transition:opacity .15s}.flashcard-back-inner.visible{opacity:1}
+.flashcard-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.tag{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:500}
+.flashcard-word{font-size:32px;font-weight:700;text-align:center;margin:auto 0}.flashcard-sub{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}.flashcard-hint{text-align:center;font-size:12px;color:var(--muted);margin-top:auto}
+.flashcard-meaning{font-size:22px;font-weight:600;text-align:center;margin-bottom:8px}.flashcard-reading{font-size:16px;text-align:center;margin-bottom:10px}.flashcard-example{background:rgba(99,102,241,.1);padding:10px;border-radius:8px;border-left:3px solid var(--primary);font-size:12px;line-height:1.5}
+.rating-section{margin-bottom:12px}.rating-hint{text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px}.rating-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.rating-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;border-radius:10px;font-size:11px;font-weight:600;border:none;cursor:pointer;min-height:60px}.rating-btn.again{background:#fecaca;color:#b91c1c}.rating-btn.hard{background:#fed7aa;color:#c2410c}.rating-btn.good{background:#bbf7d0;color:#15803d}.rating-btn.easy{background:#bfdbfe;color:#1d4ed8}.rating-interval{font-size:9px;opacity:.7;margin-top:3px}
+.quiz-options{display:flex;flex-direction:column;gap:8px}.quiz-option{width:100%;padding:14px 16px;background:var(--card);border:2px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);text-align:left;cursor:pointer}.quiz-option:disabled{cursor:default}.quiz-option.correct{background:rgba(16,185,129,.2);border-color:var(--success);color:var(--success)}.quiz-option.wrong{background:rgba(239,68,68,.2);border-color:var(--danger);color:var(--danger)}
+.retry-banner{background:linear-gradient(135deg,var(--warning),var(--danger));border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;color:#fff}.retry-banner.hidden{display:none}.retry-banner-icon{font-size:20px}.retry-banner-text{flex:1;font-size:13px}.retry-banner-count{font-size:18px;font-weight:700}
+.table-container{max-height:350px;overflow-y:auto;border-radius:10px;border:1px solid var(--border)}.word-table{width:100%;border-collapse:collapse;font-size:12px}.word-table th,.word-table td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}.word-table th{font-weight:600;color:var(--muted);font-size:10px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all .3s;padding:16px}.modal-overlay.show{opacity:1;visibility:visible}.modal{background:var(--card);border-radius:16px;padding:20px;max-width:360px;width:100%;transform:scale(.9);transition:transform .3s}.modal-overlay.show .modal{transform:scale(1)}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-header h3{font-size:18px}.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);color:var(--text);padding:12px 20px;border-radius:24px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:2000;opacity:0;transition:all .3s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,#ef4444,#8b5cf6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}#splash.hidden{opacity:0;visibility:hidden}.splash-icon{font-size:72px;animation:bounce 1s ease infinite}.splash-title{font-size:28px;font-weight:700;color:#fff;margin-top:16px}.splash-sub{font-size:13px;color:rgba(255,255,255,.8);margin-top:6px}.splash-loader{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin-top:32px}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="splash"><div class="splash-icon">🀄🇯🇵</div><div class="splash-title">CJ Vocab</div><div class="splash-sub">v2.0 - FSRS Algorithm</div><div class="splash-loader"></div></div>
+<div class="app">
+<!-- 홈 -->
+<div id="page-home" class="page active">
+<div class="page-header"><h1>🀄🇯🇵 CJ Vocab</h1><p>중국어 & 일본어 학습</p></div>
+<div class="card"><div class="card-title">📊 학습 현황</div>
+<div class="stat-grid stat-grid-2">
+<div class="stat-item"><div class="stat-value chinese" id="home-ch-count">0</div><div class="stat-label">🇨🇳 중국어</div></div>
+<div class="stat-item"><div class="stat-value japanese" id="home-jp-count">0</div><div class="stat-label">🇯🇵 일본어</div></div>
+</div>
+</div>
+<div class="card"><div class="card-title">📅 오늘 복습</div>
+<div class="stat-grid stat-grid-2">
+<div class="stat-item"><div class="stat-value" id="home-ch-due">0</div><div class="stat-label">🇨🇳 복습 예정</div></div>
+<div class="stat-item"><div class="stat-value" id="home-jp-due">0</div><div class="stat-label">🇯🇵 복습 예정</div></div>
+</div>
+</div>
+<div class="card"><div class="card-title">⚡ 빠른 시작</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<button class="btn btn-chinese" onclick="quickStart('chinese')">🇨🇳 중국어</button>
+<button class="btn btn-japanese" onclick="quickStart('japanese')">🇯🇵 일본어</button>
+</div>
+</div>
+</div>
+<!-- 학습 -->
+<div id="page-study" class="page">
+<div class="page-header"><h1>📚 학습</h1></div>
+<div class="type-tabs">
+<div class="type-tab chinese active" onclick="switchStudyType('chinese')">🇨🇳 중국어</div>
+<div class="type-tab japanese" onclick="switchStudyType('japanese')">🇯🇵 일본어</div>
+</div>
+<div id="study-chinese">
+<div class="card"><div class="card-title">🎮 학습 모드</div>
+<div class="mode-selector">
+<div class="mode-card chinese active" data-mode="fc" onclick="selectMode(this,'chinese')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div></div>
+<div class="mode-card chinese" data-mode="quiz" onclick="selectMode(this,'chinese')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div></div>
+</div></div>
+<div class="card"><div class="card-title">📝 학습 분량</div>
+<div class="range-container"><input type="range" class="range-slider" id="ch-study-count" min="5" max="30" value="15" oninput="document.getElementById('ch-count-val').textContent=this.value"><div class="range-value"><span id="ch-count-val">15</span>개</div></div>
+</div>
+<div class="card"><div class="card-title">🎯 필터</div>
+<div class="chip-group" id="ch-filter">
+<span class="chip active" data-value="all">전체</span>
+<span class="chip" data-value="due">복습예정</span>
+<span class="chip" data-value="new">새 단어</span>
+<span class="chip" data-value="wrong">오답</span>
+<span class="chip" data-value="starred">⭐</span>
+</div></div>
+<button class="btn btn-chinese" onclick="startChStudy()">🎓 학습 시작</button>
+</div>
+<div id="study-japanese" class="hidden">
+<div class="card"><div class="card-title">🎮 학습 모드</div>
+<div class="mode-selector">
+<div class="mode-card japanese active" data-mode="fc" onclick="selectMode(this,'japanese')"><div class="mode-card-icon">🃏</div><div class="mode-card-title">플래시카드</div></div>
+<div class="mode-card japanese" data-mode="quiz" onclick="selectMode(this,'japanese')"><div class="mode-card-icon">❓</div><div class="mode-card-title">5지선다</div></div>
+</div></div>
+<div class="card"><div class="card-title">📝 학습 분량</div>
+<div class="range-container"><input type="range" class="range-slider" id="jp-study-count" min="5" max="30" value="15" oninput="document.getElementById('jp-count-val').textContent=this.value"><div class="range-value"><span id="jp-count-val">15</span>개</div></div>
+</div>
+<div class="card"><div class="card-title">🎯 필터</div>
+<div class="chip-group" id="jp-filter">
+<span class="chip active" data-value="all">전체</span>
+<span class="chip" data-value="due">복습예정</span>
+<span class="chip" data-value="new">새 문장</span>
+<span class="chip" data-value="wrong">오답</span>
+<span class="chip" data-value="starred">⭐</span>
+</div></div>
+<button class="btn btn-japanese" onclick="startJpStudy()">🎓 학습 시작</button>
+</div>
+</div>
+<!-- 중국어 플래시카드 -->
+<div id="page-ch-fc" class="page">
+<div style="margin-bottom:14px"><div class="progress-bar"><div class="progress-fill" id="ch-fc-progress" style="background:var(--chinese)"></div></div><div class="progress-text"><span><span id="ch-fc-current">0</span> / <span id="ch-fc-total">0</span></span><span id="ch-fc-timer">0:00</span></div></div>
+<div class="retry-banner hidden" id="ch-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재학습</div><div class="retry-banner-count" id="ch-retry-count">0</div></div>
+<div class="flashcard-container"><div class="flashcard" id="ch-fc-card">
+<div class="flashcard-face flashcard-front">
+<div class="flashcard-tags"><span class="tag" id="ch-fc-hsk" style="background:rgba(239,68,68,.2);color:var(--chinese)"></span><span class="tag" id="ch-fc-topic" style="background:rgba(239,68,68,.1);color:var(--muted)"></span></div>
+<div class="flashcard-word" id="ch-fc-simp" style="color:var(--chinese)">简</div>
+<div class="flashcard-sub" id="ch-fc-trad"></div>
+<div class="flashcard-hint">👆 탭하여 뒤집기</div>
+</div>
+<div class="flashcard-face flashcard-back">
+<div class="flashcard-back-inner" id="ch-fc-back">
+<div class="flashcard-reading" id="ch-fc-pinyin" style="color:var(--chinese)"></div>
+<div class="flashcard-meaning" id="ch-fc-meaning"></div>
+<div id="ch-fc-example" class="flashcard-example" style="display:none;background:rgba(239,68,68,.1);border-left-color:var(--chinese)"></div>
+</div></div>
+</div></div>
+<div class="rating-section"><div class="rating-hint" id="ch-rating-hint">👆 카드를 뒤집은 후 평가하세요</div>
+<div class="rating-grid">
+<button class="rating-btn again" onclick="rateChCard(0)">😫 모름<span class="rating-interval" id="ch-int-0">다시</span></button>
+<button class="rating-btn hard" onclick="rateChCard(1)">😕 어려움<span class="rating-interval" id="ch-int-1">1일</span></button>
+<button class="rating-btn good" onclick="rateChCard(2)">🙂 보통<span class="rating-interval" id="ch-int-2">3일</span></button>
+<button class="rating-btn easy" onclick="rateChCard(3)">😊 쉬움<span class="rating-interval" id="ch-int-3">7일+</span></button>
+</div></div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" onclick="speakCh()" style="flex:0 0 44px">🔊</button>
+<button class="btn btn-secondary btn-sm" id="ch-fc-bookmark" onclick="toggleChBookmark()" style="flex:0 0 44px">☆</button>
+<button class="btn btn-secondary btn-sm" onclick="confirmEndChFC()" style="flex:1">학습 종료</button>
+</div>
+</div>
+<!-- 중국어 퀴즈 -->
+<div id="page-ch-quiz" class="page">
+<div style="margin-bottom:14px"><div class="progress-bar"><div class="progress-fill" id="ch-quiz-progress" style="background:var(--chinese)"></div></div><div class="progress-text"><span><span id="ch-quiz-current">0</span> / <span id="ch-quiz-total">0</span></span><span>✅<span id="ch-quiz-correct">0</span> ❌<span id="ch-quiz-wrong">0</span></span></div></div>
+<div class="retry-banner hidden" id="ch-quiz-retry"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제</div><div class="retry-banner-count" id="ch-quiz-retry-count">0</div></div>
+<div class="card" style="min-height:140px;display:flex;flex-direction:column;justify-content:center">
+<div class="flashcard-tags" style="justify-content:center"><span class="tag" id="ch-quiz-hsk" style="background:rgba(239,68,68,.2);color:var(--chinese)"></span></div>
+<div class="flashcard-word" id="ch-quiz-word" style="font-size:32px;color:var(--chinese)">简</div>
+<div class="flashcard-sub" id="ch-quiz-trad"></div>
+<div id="ch-quiz-pinyin" style="font-size:14px;color:var(--chinese);text-align:center;margin-top:6px;display:none"></div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<button class="btn btn-secondary btn-sm" onclick="speakCh()" style="flex:0 0 44px">🔊</button>
+<button class="btn btn-secondary btn-sm" id="ch-quiz-bookmark" onclick="toggleChQuizBookmark()" style="flex:1">☆ 북마크</button>
+</div>
+<div class="quiz-options" id="ch-quiz-options"></div>
+<button class="btn btn-chinese hidden" id="ch-quiz-next" onclick="nextChQuiz()" style="margin-top:14px">다음 →</button>
+<div style="margin-top:14px"><button class="btn btn-secondary btn-sm" onclick="confirmEndChQuiz()">학습 종료</button></div>
+</div>
+<!-- 일본어 플래시카드 -->
+<div id="page-jp-fc" class="page">
+<div style="margin-bottom:14px"><div class="progress-bar"><div class="progress-fill" id="jp-fc-progress" style="background:var(--japanese)"></div></div><div class="progress-text"><span><span id="jp-fc-current">0</span> / <span id="jp-fc-total">0</span></span><span id="jp-fc-timer">0:00</span></div></div>
+<div class="retry-banner hidden" id="jp-retry-banner"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재학습</div><div class="retry-banner-count" id="jp-retry-count">0</div></div>
+<div class="flashcard-container"><div class="flashcard" id="jp-fc-card">
+<div class="flashcard-face flashcard-front">
+<div class="flashcard-tags"><span class="tag" id="jp-fc-level" style="background:rgba(139,92,246,.2);color:var(--japanese)"></span></div>
+<div class="flashcard-word" id="jp-fc-meaning" style="font-size:20px;line-height:1.5"></div>
+<div class="flashcard-hint">👆 탭하여 일본어 확인</div>
+</div>
+<div class="flashcard-face flashcard-back">
+<div class="flashcard-back-inner" id="jp-fc-back">
+<div class="flashcard-word" id="jp-fc-sentence" style="font-size:24px;color:var(--japanese);line-height:1.4;margin-bottom:10px"></div>
+<div class="flashcard-reading" id="jp-fc-reading" style="color:var(--muted);font-size:14px"></div>
+<div id="jp-fc-grammar" style="font-size:12px;color:var(--japanese);text-align:center;margin-top:10px;padding:8px;background:rgba(139,92,246,.1);border-radius:8px"></div>
+</div></div>
+</div></div>
+<div class="rating-section"><div class="rating-hint" id="jp-rating-hint">👆 카드를 뒤집은 후 평가하세요</div>
+<div class="rating-grid">
+<button class="rating-btn again" onclick="rateJpCard(0)">😫 모름<span class="rating-interval" id="jp-int-0">다시</span></button>
+<button class="rating-btn hard" onclick="rateJpCard(1)">😕 어려움<span class="rating-interval" id="jp-int-1">1일</span></button>
+<button class="rating-btn good" onclick="rateJpCard(2)">🙂 보통<span class="rating-interval" id="jp-int-2">3일</span></button>
+<button class="rating-btn easy" onclick="rateJpCard(3)">😊 쉬움<span class="rating-interval" id="jp-int-3">7일+</span></button>
+</div></div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary btn-sm" onclick="speakJp()" style="flex:0 0 44px">🔊</button>
+<button class="btn btn-secondary btn-sm" id="jp-fc-bookmark" onclick="toggleJpBookmark()" style="flex:0 0 44px">☆</button>
+<button class="btn btn-secondary btn-sm" onclick="confirmEndJpFC()" style="flex:1">학습 종료</button>
+</div>
+</div>
+<!-- 일본어 퀴즈 -->
+<div id="page-jp-quiz" class="page">
+<div style="margin-bottom:14px"><div class="progress-bar"><div class="progress-fill" id="jp-quiz-progress" style="background:var(--japanese)"></div></div><div class="progress-text"><span><span id="jp-quiz-current">0</span> / <span id="jp-quiz-total">0</span></span><span>✅<span id="jp-quiz-correct">0</span> ❌<span id="jp-quiz-wrong">0</span></span></div></div>
+<div class="retry-banner hidden" id="jp-quiz-retry"><div class="retry-banner-icon">🔄</div><div class="retry-banner-text">오답 재출제</div><div class="retry-banner-count" id="jp-quiz-retry-count">0</div></div>
+<div class="card" style="min-height:140px;display:flex;flex-direction:column;justify-content:center">
+<div class="flashcard-tags" style="justify-content:center"><span class="tag" id="jp-quiz-level" style="background:rgba(139,92,246,.2);color:var(--japanese)"></span></div>
+<div class="flashcard-word" id="jp-quiz-word" style="font-size:20px;color:var(--japanese);line-height:1.4"></div>
+<div id="jp-quiz-reading" style="font-size:13px;color:var(--japanese);text-align:center;margin-top:6px;display:none"></div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<button class="btn btn-secondary btn-sm" onclick="speakJp()" style="flex:0 0 44px">🔊</button>
+<button class="btn btn-secondary btn-sm" id="jp-quiz-bookmark" onclick="toggleJpQuizBookmark()" style="flex:1">☆ 북마크</button>
+</div>
+<div class="quiz-options" id="jp-quiz-options"></div>
+<button class="btn btn-japanese hidden" id="jp-quiz-next" onclick="nextJpQuiz()" style="margin-top:14px">다음 →</button>
+<div style="margin-top:14px"><button class="btn btn-secondary btn-sm" onclick="confirmEndJpQuiz()">학습 종료</button></div>
+</div>
+<!-- 데이터 -->
+<div id="page-data" class="page">
+<div class="page-header"><h1>💾 데이터</h1></div>
+<div class="card"><label class="upload-zone"><input type="file" accept=".xlsx,.xls" style="display:none" onchange="handleExcel(this.files[0])"><div class="upload-zone-icon">📤</div><p>Excel 파일 업로드<br><small>시트명: Chinese / Japanese</small></p></label></div>
+<div class="type-tabs">
+<div class="type-tab chinese active" onclick="switchDataType('chinese')">🇨🇳 중국어</div>
+<div class="type-tab japanese" onclick="switchDataType('japanese')">🇯🇵 일본어</div>
+</div>
+<div id="data-chinese">
+<div class="card"><div class="card-title">🇨🇳 중국어 DB (<span id="ch-db-count">0</span>개)</div>
+<div class="table-container"><table class="word-table"><thead><tr><th>简/繁</th><th>拼音</th><th>뜻</th></tr></thead><tbody id="ch-table"></tbody></table></div>
+</div></div>
+<div id="data-japanese" class="hidden">
+<div class="card"><div class="card-title">🇯🇵 일본어 DB (<span id="jp-db-count">0</span>개)</div>
+<div class="table-container"><table class="word-table"><thead><tr><th>文장</th><th>발음</th><th>뜻</th></tr></thead><tbody id="jp-table"></tbody></table></div>
+</div></div>
+<div class="card">
+<button class="btn btn-secondary btn-sm" style="margin-bottom:8px" onclick="clearAllData()">🗑️ 전체 초기화</button>
+</div>
+</div>
+</div>
+<!-- 네비게이션 -->
+<nav class="bottom-nav">
+<a class="nav-item active" onclick="showPage('home')" data-page="home"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</a>
+<a class="nav-item" onclick="showPage('study')" data-page="study"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>학습</a>
+<a class="nav-item" onclick="showPage('data')" data-page="data"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>데이터</a>
+</nav>
+<!-- 모달 -->
+<div class="modal-overlay" id="complete-modal"><div class="modal"><div class="modal-header"><h3>🎉 학습 완료!</h3><button class="modal-close" onclick="closeModal('complete-modal')">✕</button></div>
+<div class="stat-grid" style="margin-bottom:16px">
+<div class="stat-item"><div class="stat-value" id="qc-total">0</div><div class="stat-label">총 학습</div></div>
+<div class="stat-item"><div class="stat-value success" id="qc-correct">0</div><div class="stat-label">정답</div></div>
+<div class="stat-item"><div class="stat-value danger" id="qc-wrong">0</div><div class="stat-label">오답</div></div>
+<div class="stat-item"><div class="stat-value" id="qc-acc">0%</div><div class="stat-label">정답률</div></div>
+</div>
+<button class="btn btn-primary" onclick="closeModal('complete-modal');showPage('home');">확인</button>
+</div></div>
+<div class="modal-overlay" id="confirm-modal"><div class="modal"><div class="modal-header"><h3 id="confirm-title">확인</h3><button class="modal-close" onclick="closeModal('confirm-modal')">✕</button></div><p id="confirm-msg" style="margin-bottom:16px;color:var(--muted)"></p><div style="display:flex;gap:10px"><button class="btn btn-secondary" onclick="closeModal('confirm-modal')">취소</button><button class="btn btn-primary" id="confirm-btn">확인</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+// Service Worker
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW:',e));}
+
+const DB_NAME='CJ_VocabDB_v2',DB_VER=1;
+let db=null,chState={},jpState={};
+
+// ========== FSRS-4.5 Algorithm ==========
+const FSRS={
+w:[0.2,1,3,7,4.93,0.94,0.86,0.01,1.49,0.14,0.94,2.18,0.05,0.34,1.26,0.29,2.61],
+DECAY:-0.5,FACTOR:0.9,
+
+initStability(g){return this.w[g];},
+initDifficulty(g){return Math.max(1,Math.min(10,this.w[4]-this.w[5]*(g-3)));},
+
+retrievability(t,s){return Math.pow(1+t/(9*s),this.DECAY);},
+
+nextInterval(s,r){
+const targetR=0.9;
+const interval=9*s*(Math.pow(targetR,1/this.DECAY)-1);
+return Math.max(1,Math.round(interval));
+},
+
+nextDifficulty(d,g){
+const delta=this.w[6]*(g-3);
+return Math.max(1,Math.min(10,d-delta));
+},
+
+nextStability(s,d,r,g){
+if(g===0){
+return Math.max(0.1,s*Math.pow(this.w[11],this.w[12]*Math.pow(d,this.w[13])*(Math.pow(s,this.w[14])-1)*Math.pow(Math.E,(1-r)*this.w[15])));
+}
+const hardBonus=g===1?this.w[16]:1;
+return s*(1+Math.pow(Math.E,this.w[8])*Math.pow(11-d,this.w[9])*Math.pow(s,-this.w[10])*(Math.pow(Math.E,(1-r)*this.w[7])-1)*hardBonus);
+}
+};
+
+function calcNext(item,grade){
+const now=new Date();
+const lastReview=item.lastReview?new Date(item.lastReview):null;
+const elapsedDays=lastReview?Math.max(1,(now-lastReview)/(1000*60*60*24)):1;
+
+let stability=item.stability;
+let difficulty=item.difficulty;
+
+if(!item.reviewCount||item.reviewCount===0){
+stability=FSRS.initStability(grade);
+difficulty=FSRS.initDifficulty(grade);
+}else{
+const r=FSRS.retrievability(elapsedDays,stability||1);
+difficulty=FSRS.nextDifficulty(difficulty||5,grade);
+stability=FSRS.nextStability(stability||1,difficulty,r,grade);
+}
+
+const interval=FSRS.nextInterval(stability,0.9);
+const nextReview=new Date(now.getTime()+interval*24*60*60*1000);
+
+item.stability=stability;
+item.difficulty=difficulty;
+item.lastReview=now.toISOString();
+item.nextReview=nextReview.toISOString();
+item.fsrsState=grade===0?'Relearning':'Review';
+
+return item;
+}
+
+function previewIntervals(item){
+const intervals=[];
+for(let g=0;g<4;g++){
+const clone={...item};
+calcNext(clone,g);
+const lastR=clone.lastReview?new Date(clone.lastReview):new Date();
+const nextR=clone.nextReview?new Date(clone.nextReview):new Date();
+const days=Math.round((nextR-lastR)/(1000*60*60*24));
+intervals.push(days<=0?'즉시':days+'일');
+}
+return intervals;
+}
+
+// ========== IndexedDB ==========
+function openDB(){return new Promise((res,rej)=>{
+const req=indexedDB.open(DB_NAME,DB_VER);
+req.onerror=()=>rej(req.error);
+req.onsuccess=()=>{db=req.result;res(db);};
+req.onupgradeneeded=e=>{
+const d=e.target.result;
+if(!d.objectStoreNames.contains('chinese'))d.createObjectStore('chinese',{keyPath:'Simplified'});
+if(!d.objectStoreNames.contains('japanese'))d.createObjectStore('japanese',{keyPath:'Sentence_JP'});
+};
+});}
+
+async function getAllCh(){return new Promise(r=>{const req=db.transaction('chinese','readonly').objectStore('chinese').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);});}
+async function getAllJp(){return new Promise(r=>{const req=db.transaction('japanese','readonly').objectStore('japanese').getAll();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);});}
+async function getCh(k){return new Promise(r=>{try{const req=db.transaction('chinese','readonly').objectStore('chinese').get(k);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}});}
+async function getJp(k){return new Promise(r=>{try{const req=db.transaction('japanese','readonly').objectStore('japanese').get(k);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);}catch(e){r(null);}});}
+async function saveCh(w){return new Promise(r=>{const tx=db.transaction('chinese','readwrite');tx.objectStore('chinese').put(w);tx.oncomplete=r;});}
+async function saveJp(w){return new Promise(r=>{const tx=db.transaction('japanese','readwrite');tx.objectStore('japanese').put(w);tx.oncomplete=r;});}
+
+// ========== Helpers ==========
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showModal(id){document.getElementById(id)?.classList.add('show');}
+function closeModal(id){document.getElementById(id)?.classList.remove('show');}
+function showConfirm(title,msg,fn){document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-msg').textContent=msg;document.getElementById('confirm-btn').onclick=()=>{closeModal('confirm-modal');fn();};showModal('confirm-modal');}
+function vibrate(p){if(navigator.vibrate)navigator.vibrate(p);}
+function getAcc(w){const rc=w?.reviewCount||0;return rc>0?Math.round(((w?.correctCount||0)/rc)*100):null;}
+function isWrong(w){return(w?.consecutiveWrong||0)>=1||(getAcc(w)!==null&&getAcc(w)<60);}
+function isDue(w){if(!w.reviewCount)return false;if(!w.nextReview)return true;return new Date(w.nextReview)<=new Date();}
+
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById('page-'+id)?.classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===id));
+if(id==='home')updateHomeStats();
+if(id==='data')updateDataTable();
+}
+
+function switchStudyType(type){
+document.querySelectorAll('#page-study .type-tab').forEach(t=>t.classList.toggle('active',t.textContent.includes(type==='chinese'?'중국어':'일본어')));
+document.getElementById('study-chinese').classList.toggle('hidden',type!=='chinese');
+document.getElementById('study-japanese').classList.toggle('hidden',type!=='japanese');
+}
+
+function switchDataType(type){
+document.querySelectorAll('#page-data .type-tab').forEach(t=>t.classList.toggle('active',t.textContent.includes(type==='chinese'?'중국어':'일본어')));
+document.getElementById('data-chinese').classList.toggle('hidden',type!=='chinese');
+document.getElementById('data-japanese').classList.toggle('hidden',type!=='japanese');
+}
+
+function selectMode(el,lang){
+document.querySelectorAll(`#study-${lang==='chinese'?'chinese':'japanese'} .mode-card`).forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+}
+
+function getChip(groupId){return document.querySelector(`#${groupId} .chip.active`)?.dataset.value||'all';}
+
+// ========== TTS ==========
+function speakCh(){
+const w=chState.words?.[chState.idx];
+if(!w||!('speechSynthesis'in window))return;
+speechSynthesis.cancel();
+setTimeout(()=>{const u=new SpeechSynthesisUtterance(w.Simplified);u.lang='zh-CN';u.rate=0.8;speechSynthesis.speak(u);},50);
+}
+
+function speakJp(){
+const w=jpState.words?.[jpState.idx];
+if(!w||!('speechSynthesis'in window))return;
+speechSynthesis.cancel();
+setTimeout(()=>{const u=new SpeechSynthesisUtterance(w.Sentence_JP);u.lang='ja-JP';u.rate=0.8;speechSynthesis.speak(u);},50);
+}
+
+// ========== Home Stats ==========
+async function updateHomeStats(){
+const ch=await getAllCh(),jp=await getAllJp();
+document.getElementById('home-ch-count').textContent=ch.length;
+document.getElementById('home-jp-count').textContent=jp.length;
+document.getElementById('home-ch-due').textContent=ch.filter(w=>!w.reviewCount||isDue(w)).length;
+document.getElementById('home-jp-due').textContent=jp.filter(w=>!w.reviewCount||isDue(w)).length;
+}
+
+// ========== Quick Start ==========
+async function quickStart(type){
+if(type==='chinese'){
+const ch=await getAllCh();if(!ch.length){showToast('📤 중국어 DB를 업로드하세요');return;}
+const due=ch.filter(w=>!w.reviewCount||isDue(w));
+if(!due.length){showToast('✅ 복습할 단어가 없습니다!');return;}
+chState={words:shuffle(due).slice(0,15),allWords:ch,idx:0,flipped:false,stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',timer:null};
+document.getElementById('ch-fc-total').textContent=chState.words.length;
+document.getElementById('ch-retry-banner').classList.add('hidden');
+showPage('ch-fc');startChTimer();showChCard();
+}else{
+const jp=await getAllJp();if(!jp.length){showToast('📤 일본어 DB를 업로드하세요');return;}
+const due=jp.filter(w=>!w.reviewCount||isDue(w));
+if(!due.length){showToast('✅ 복습할 문장이 없습니다!');return;}
+jpState={words:shuffle(due).slice(0,15),allWords:jp,idx:0,flipped:false,stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',timer:null};
+document.getElementById('jp-fc-total').textContent=jpState.words.length;
+document.getElementById('jp-retry-banner').classList.add('hidden');
+showPage('jp-fc');startJpTimer();showJpCard();
+}
+}
+
+// ========== Chinese Flashcard ==========
+function startChTimer(){const el=document.getElementById('ch-fc-timer'),s=Date.now();if(chState.timer)clearInterval(chState.timer);chState.timer=setInterval(()=>{const sec=Math.floor((Date.now()-s)/1000);el.textContent=Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');},1000);}
+
+function showChCard(){
+if(chState.idx>=chState.words.length){
+if(chState.retryQueue.length>0&&chState.phase==='normal'){
+chState.words=[...chState.retryQueue];chState.retryQueue=[];chState.idx=0;chState.phase='retry';
+document.getElementById('ch-retry-banner').classList.remove('hidden');
+document.getElementById('ch-retry-count').textContent=chState.words.length;
+showToast('🔄 오답 '+chState.words.length+'개 재출제!');
+showChCard();return;
+}else{endChFC();return;}
+}
+const w=chState.words[chState.idx];
+document.getElementById('ch-fc-back').classList.remove('visible');
+chState.flipped=false;
+document.getElementById('ch-fc-card').classList.remove('flipped');
+document.getElementById('ch-fc-simp').textContent=w.Simplified||'';
+document.getElementById('ch-fc-trad').textContent=w.Traditional?`(${w.Traditional})`:'';
+document.getElementById('ch-fc-hsk').textContent=w.HSK?`HSK ${w.HSK}`:'';
+document.getElementById('ch-fc-topic').textContent=w.Topic||'';
+document.getElementById('ch-fc-progress').style.width=(chState.idx/chState.words.length)*100+'%';
+document.getElementById('ch-fc-current').textContent=chState.idx+1;
+document.getElementById('ch-rating-hint').textContent='👆 카드를 뒤집은 후 평가하세요';
+// Update intervals
+const intervals=previewIntervals(w);
+for(let i=0;i<4;i++)document.getElementById('ch-int-'+i).textContent=intervals[i];
+updateChBookmarkBtn();
+}
+
+function flipChCard(){
+if(chState.flipped)return;
+chState.flipped=true;
+document.getElementById('ch-fc-card').classList.add('flipped');
+const w=chState.words[chState.idx];
+setTimeout(()=>{
+document.getElementById('ch-fc-pinyin').textContent=w.Pinyin||'';
+document.getElementById('ch-fc-meaning').textContent=w.Meaning_KO||'';
+if(w.Example_CH){
+document.getElementById('ch-fc-example').innerHTML=w.Example_CH+(w.Example_KO?'<br><small style="color:var(--muted)">'+w.Example_KO+'</small>':'');
+document.getElementById('ch-fc-example').style.display='block';
+}else{document.getElementById('ch-fc-example').style.display='none';}
+document.getElementById('ch-fc-back').classList.add('visible');
+document.getElementById('ch-rating-hint').textContent='난이도를 선택하세요';
+},300);
+}
+
+async function rateChCard(grade){
+if(!chState.flipped)return;
+const w=chState.words[chState.idx];
+if(grade===0)chState.stats.again++;else if(grade===1)chState.stats.hard++;else if(grade===2)chState.stats.good++;else chState.stats.easy++;
+
+if(grade===0&&chState.phase==='normal'){
+const insertIdx=Math.min(chState.idx+5+Math.floor(Math.random()*3),chState.words.length);
+chState.words.splice(insertIdx,0,{...w,isRetry:true});
+}
+
+const fresh=await getCh(w.Simplified);
+if(fresh){
+fresh.reviewCount=(fresh.reviewCount||0)+1;
+if(grade>=2)fresh.correctCount=(fresh.correctCount||0)+1;
+if(grade<=1)fresh.consecutiveWrong=(fresh.consecutiveWrong||0)+1;else fresh.consecutiveWrong=0;
+calcNext(fresh,grade);
+await saveCh(fresh);
+}
+vibrate(grade>=2?10:[50,30,50]);
+chState.idx++;
+showChCard();
+}
+
+function updateChBookmarkBtn(){const w=chState.words?.[chState.idx];document.getElementById('ch-fc-bookmark').textContent=w?.starred?'⭐':'☆';}
+async function toggleChBookmark(){const w=chState.words[chState.idx];if(!w)return;const f=await getCh(w.Simplified);if(!f)return;f.starred=!f.starred;await saveCh(f);w.starred=f.starred;updateChBookmarkBtn();showToast(f.starred?'⭐ 북마크':'북마크 해제');}
+
+function confirmEndChFC(){
+const ev=chState.stats.again+chState.stats.hard+chState.stats.good+chState.stats.easy;
+if(ev===0)showConfirm('학습 종료','아직 평가한 단어가 없습니다. 종료할까요?',endChFC);
+else if(chState.idx<chState.words.length)showConfirm('학습 종료','남은 단어가 있습니다. 종료할까요?',endChFC);
+else endChFC();
+}
+
+function endChFC(){
+if(chState.timer){clearInterval(chState.timer);chState.timer=null;}
+const total=chState.stats.again+chState.stats.hard+chState.stats.good+chState.stats.easy;
+if(!total){showPage('home');return;}
+const correct=chState.stats.good+chState.stats.easy;
+document.getElementById('qc-total').textContent=total;
+document.getElementById('qc-correct').textContent=correct;
+document.getElementById('qc-wrong').textContent=chState.stats.again+chState.stats.hard;
+document.getElementById('qc-acc').textContent=Math.round((correct/total)*100)+'%';
+showModal('complete-modal');updateHomeStats();
+}
+
+// ========== Chinese Quiz ==========
+async function startChStudy(){
+const words=await getAllCh();if(!words.length){showToast('📤 먼저 중국어 DB를 업로드하세요');return;}
+const count=parseInt(document.getElementById('ch-study-count').value)||15;
+const filter=getChip('ch-filter');
+let filtered=words;
+if(filter==='new')filtered=words.filter(w=>!w.reviewCount);
+else if(filter==='due')filtered=words.filter(w=>isDue(w));
+else if(filter==='wrong')filtered=words.filter(w=>isWrong(w));
+else if(filter==='starred')filtered=words.filter(w=>w.starred);
+if(!filtered.length){showToast('⚠️ 조건에 맞는 단어가 없습니다');return;}
+const mode=document.querySelector('#study-chinese .mode-card.active')?.dataset.mode||'fc';
+if(mode==='quiz'){
+const valid=filtered.filter(w=>w.Meaning_KO);
+if(valid.length<5){showToast('⚠️ 뜻이 있는 단어가 부족합니다');return;}
+chState={words:shuffle(valid).slice(0,count),allWords:words,idx:0,correct:0,wrong:0,answered:false,retryQueue:[],phase:'normal'};
+document.getElementById('ch-quiz-total').textContent=chState.words.length;
+document.getElementById('ch-quiz-retry').classList.add('hidden');
+showPage('ch-quiz');showChQuizQ();
+}else{
+chState={words:shuffle(filtered).slice(0,count),allWords:words,idx:0,flipped:false,stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',timer:null};
+document.getElementById('ch-fc-total').textContent=chState.words.length;
+document.getElementById('ch-retry-banner').classList.add('hidden');
+showPage('ch-fc');startChTimer();showChCard();
+}
+}
+
+function showChQuizQ(){
+if(chState.idx>=chState.words.length){
+if(chState.retryQueue.length>0&&chState.phase==='normal'){
+chState.words=[...chState.retryQueue];chState.retryQueue=[];chState.idx=0;chState.phase='retry';
+document.getElementById('ch-quiz-retry').classList.remove('hidden');
+document.getElementById('ch-quiz-retry-count').textContent=chState.words.length;
+showToast('🔄 오답 '+chState.words.length+'개 재출제!');
+}else{endChQuiz();return;}
+}
+const w=chState.words[chState.idx];
+chState.answered=false;
+document.getElementById('ch-quiz-word').textContent=w.Simplified||'';
+document.getElementById('ch-quiz-trad').textContent=w.Traditional?`(${w.Traditional})`:'';
+document.getElementById('ch-quiz-hsk').textContent=w.HSK?`HSK ${w.HSK}`:'';
+document.getElementById('ch-quiz-pinyin').textContent=w.Pinyin||'';
+document.getElementById('ch-quiz-pinyin').style.display='none';
+document.getElementById('ch-quiz-progress').style.width=(chState.idx/chState.words.length)*100+'%';
+document.getElementById('ch-quiz-current').textContent=chState.idx+1;
+document.getElementById('ch-quiz-correct').textContent=chState.correct;
+document.getElementById('ch-quiz-wrong').textContent=chState.wrong;
+document.getElementById('ch-quiz-next').classList.add('hidden');
+// Options
+const correct=w.Meaning_KO;
+const others=shuffle(chState.allWords.filter(x=>x.Meaning_KO&&x.Meaning_KO!==correct)).slice(0,4).map(x=>x.Meaning_KO);
+const opts=shuffle([correct,...others]);
+document.getElementById('ch-quiz-options').innerHTML=opts.map(o=>`<button class="quiz-option" onclick="selectChQuiz(this,'${o.replace(/'/g,"\\'")}','${correct.replace(/'/g,"\\'")}')">${o}</button>`).join('');
+updateChQuizBookmarkBtn();
+}
+
+async function selectChQuiz(el,sel,ans){
+if(chState.answered)return;
+chState.answered=true;
+const ok=sel===ans;
+const w=chState.words[chState.idx];
+document.querySelectorAll('#ch-quiz-options .quiz-option').forEach(b=>{
+b.disabled=true;
+if(b.textContent===ans)b.classList.add('correct');
+else if(b===el&&!ok)b.classList.add('wrong');
+});
+document.getElementById('ch-quiz-pinyin').style.display='block';
+if(ok){chState.correct++;vibrate(10);}
+else{chState.wrong++;vibrate([50,30,50]);if(chState.phase==='normal')chState.retryQueue.push({...w});}
+const fresh=await getCh(w.Simplified);
+if(fresh){
+fresh.reviewCount=(fresh.reviewCount||0)+1;
+if(ok)fresh.correctCount=(fresh.correctCount||0)+1;
+if(!ok)fresh.consecutiveWrong=(fresh.consecutiveWrong||0)+1;else fresh.consecutiveWrong=0;
+calcNext(fresh,ok?2:0);
+await saveCh(fresh);
+}
+document.getElementById('ch-quiz-next').classList.remove('hidden');
+}
+
+function nextChQuiz(){chState.idx++;showChQuizQ();}
+function confirmEndChQuiz(){if(chState.idx<chState.words.length||chState.retryQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endChQuiz);else endChQuiz();}
+function endChQuiz(){
+const total=chState.correct+chState.wrong;if(!total){showPage('home');return;}
+document.getElementById('qc-total').textContent=total;
+document.getElementById('qc-correct').textContent=chState.correct;
+document.getElementById('qc-wrong').textContent=chState.wrong;
+document.getElementById('qc-acc').textContent=Math.round((chState.correct/total)*100)+'%';
+showModal('complete-modal');updateHomeStats();
+}
+function updateChQuizBookmarkBtn(){const w=chState.words?.[chState.idx];document.getElementById('ch-quiz-bookmark').textContent=w?.starred?'⭐ 해제':'☆ 북마크';}
+async function toggleChQuizBookmark(){const w=chState.words[chState.idx];if(!w)return;const f=await getCh(w.Simplified);if(!f)return;f.starred=!f.starred;await saveCh(f);w.starred=f.starred;updateChQuizBookmarkBtn();showToast(f.starred?'⭐ 북마크':'북마크 해제');}
+
+// ========== Japanese Flashcard ==========
+function startJpTimer(){const el=document.getElementById('jp-fc-timer'),s=Date.now();if(jpState.timer)clearInterval(jpState.timer);jpState.timer=setInterval(()=>{const sec=Math.floor((Date.now()-s)/1000);el.textContent=Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');},1000);}
+
+function showJpCard(){
+if(jpState.idx>=jpState.words.length){
+if(jpState.retryQueue.length>0&&jpState.phase==='normal'){
+jpState.words=[...jpState.retryQueue];jpState.retryQueue=[];jpState.idx=0;jpState.phase='retry';
+document.getElementById('jp-retry-banner').classList.remove('hidden');
+document.getElementById('jp-retry-count').textContent=jpState.words.length;
+showToast('🔄 오답 '+jpState.words.length+'개 재출제!');
+showJpCard();return;
+}else{endJpFC();return;}
+}
+const w=jpState.words[jpState.idx];
+document.getElementById('jp-fc-back').classList.remove('visible');
+jpState.flipped=false;
+document.getElementById('jp-fc-card').classList.remove('flipped');
+document.getElementById('jp-fc-meaning').textContent=w.Meaning_KO||'뜻';
+document.getElementById('jp-fc-level').textContent=w.Level||'';
+document.getElementById('jp-fc-progress').style.width=(jpState.idx/jpState.words.length)*100+'%';
+document.getElementById('jp-fc-current').textContent=jpState.idx+1;
+document.getElementById('jp-rating-hint').textContent='👆 카드를 뒤집은 후 평가하세요';
+const intervals=previewIntervals(w);
+for(let i=0;i<4;i++)document.getElementById('jp-int-'+i).textContent=intervals[i];
+updateJpBookmarkBtn();
+}
+
+function flipJpCard(){
+if(jpState.flipped)return;
+jpState.flipped=true;
+document.getElementById('jp-fc-card').classList.add('flipped');
+const w=jpState.words[jpState.idx];
+setTimeout(()=>{
+document.getElementById('jp-fc-sentence').textContent=w.Sentence_JP||'';
+document.getElementById('jp-fc-reading').textContent=w.Reading||'';
+document.getElementById('jp-fc-grammar').textContent=w.Grammar||'';
+document.getElementById('jp-fc-grammar').style.display=w.Grammar?'block':'none';
+document.getElementById('jp-fc-back').classList.add('visible');
+document.getElementById('jp-rating-hint').textContent='난이도를 선택하세요';
+},300);
+}
+
+async function rateJpCard(grade){
+if(!jpState.flipped)return;
+const w=jpState.words[jpState.idx];
+if(grade===0)jpState.stats.again++;else if(grade===1)jpState.stats.hard++;else if(grade===2)jpState.stats.good++;else jpState.stats.easy++;
+
+if(grade===0&&jpState.phase==='normal'){
+const insertIdx=Math.min(jpState.idx+5+Math.floor(Math.random()*3),jpState.words.length);
+jpState.words.splice(insertIdx,0,{...w,isRetry:true});
+}
+
+const fresh=await getJp(w.Sentence_JP);
+if(fresh){
+fresh.reviewCount=(fresh.reviewCount||0)+1;
+if(grade>=2)fresh.correctCount=(fresh.correctCount||0)+1;
+if(grade<=1)fresh.consecutiveWrong=(fresh.consecutiveWrong||0)+1;else fresh.consecutiveWrong=0;
+calcNext(fresh,grade);
+await saveJp(fresh);
+}
+vibrate(grade>=2?10:[50,30,50]);
+jpState.idx++;
+showJpCard();
+}
+
+function updateJpBookmarkBtn(){const w=jpState.words?.[jpState.idx];document.getElementById('jp-fc-bookmark').textContent=w?.starred?'⭐':'☆';}
+async function toggleJpBookmark(){const w=jpState.words[jpState.idx];if(!w)return;const f=await getJp(w.Sentence_JP);if(!f)return;f.starred=!f.starred;await saveJp(f);w.starred=f.starred;updateJpBookmarkBtn();showToast(f.starred?'⭐ 북마크':'북마크 해제');}
+
+function confirmEndJpFC(){
+const ev=jpState.stats.again+jpState.stats.hard+jpState.stats.good+jpState.stats.easy;
+if(ev===0)showConfirm('학습 종료','아직 평가한 문장이 없습니다. 종료할까요?',endJpFC);
+else if(jpState.idx<jpState.words.length)showConfirm('학습 종료','남은 문장이 있습니다. 종료할까요?',endJpFC);
+else endJpFC();
+}
+
+function endJpFC(){
+if(jpState.timer){clearInterval(jpState.timer);jpState.timer=null;}
+const total=jpState.stats.again+jpState.stats.hard+jpState.stats.good+jpState.stats.easy;
+if(!total){showPage('home');return;}
+const correct=jpState.stats.good+jpState.stats.easy;
+document.getElementById('qc-total').textContent=total;
+document.getElementById('qc-correct').textContent=correct;
+document.getElementById('qc-wrong').textContent=jpState.stats.again+jpState.stats.hard;
+document.getElementById('qc-acc').textContent=Math.round((correct/total)*100)+'%';
+showModal('complete-modal');updateHomeStats();
+}
+
+// ========== Japanese Quiz ==========
+async function startJpStudy(){
+const words=await getAllJp();if(!words.length){showToast('📤 먼저 일본어 DB를 업로드하세요');return;}
+const count=parseInt(document.getElementById('jp-study-count').value)||15;
+const filter=getChip('jp-filter');
+let filtered=words;
+if(filter==='new')filtered=words.filter(w=>!w.reviewCount);
+else if(filter==='due')filtered=words.filter(w=>isDue(w));
+else if(filter==='wrong')filtered=words.filter(w=>isWrong(w));
+else if(filter==='starred')filtered=words.filter(w=>w.starred);
+if(!filtered.length){showToast('⚠️ 조건에 맞는 문장이 없습니다');return;}
+const mode=document.querySelector('#study-japanese .mode-card.active')?.dataset.mode||'fc';
+if(mode==='quiz'){
+const valid=filtered.filter(w=>w.Meaning_KO);
+if(valid.length<5){showToast('⚠️ 뜻이 있는 문장이 부족합니다');return;}
+jpState={words:shuffle(valid).slice(0,count),allWords:words,idx:0,correct:0,wrong:0,answered:false,retryQueue:[],phase:'normal'};
+document.getElementById('jp-quiz-total').textContent=jpState.words.length;
+document.getElementById('jp-quiz-retry').classList.add('hidden');
+showPage('jp-quiz');showJpQuizQ();
+}else{
+jpState={words:shuffle(filtered).slice(0,count),allWords:words,idx:0,flipped:false,stats:{again:0,hard:0,good:0,easy:0},retryQueue:[],phase:'normal',timer:null};
+document.getElementById('jp-fc-total').textContent=jpState.words.length;
+document.getElementById('jp-retry-banner').classList.add('hidden');
+showPage('jp-fc');startJpTimer();showJpCard();
+}
+}
+
+function showJpQuizQ(){
+if(jpState.idx>=jpState.words.length){
+if(jpState.retryQueue.length>0&&jpState.phase==='normal'){
+jpState.words=[...jpState.retryQueue];jpState.retryQueue=[];jpState.idx=0;jpState.phase='retry';
+document.getElementById('jp-quiz-retry').classList.remove('hidden');
+document.getElementById('jp-quiz-retry-count').textContent=jpState.words.length;
+showToast('🔄 오답 '+jpState.words.length+'개 재출제!');
+}else{endJpQuiz();return;}
+}
+const w=jpState.words[jpState.idx];
+jpState.answered=false;
+document.getElementById('jp-quiz-word').textContent=w.Sentence_JP||'';
+document.getElementById('jp-quiz-level').textContent=w.Level||'';
+document.getElementById('jp-quiz-reading').textContent=w.Reading||'';
+document.getElementById('jp-quiz-reading').style.display='none';
+document.getElementById('jp-quiz-progress').style.width=(jpState.idx/jpState.words.length)*100+'%';
+document.getElementById('jp-quiz-current').textContent=jpState.idx+1;
+document.getElementById('jp-quiz-correct').textContent=jpState.correct;
+document.getElementById('jp-quiz-wrong').textContent=jpState.wrong;
+document.getElementById('jp-quiz-next').classList.add('hidden');
+const correct=w.Meaning_KO;
+const others=shuffle(jpState.allWords.filter(x=>x.Meaning_KO&&x.Meaning_KO!==correct)).slice(0,4).map(x=>x.Meaning_KO);
+const opts=shuffle([correct,...others]);
+document.getElementById('jp-quiz-options').innerHTML=opts.map(o=>`<button class="quiz-option" onclick="selectJpQuiz(this,'${o.replace(/'/g,"\\'")}','${correct.replace(/'/g,"\\'")}')">${o}</button>`).join('');
+updateJpQuizBookmarkBtn();
+}
+
+async function selectJpQuiz(el,sel,ans){
+if(jpState.answered)return;
+jpState.answered=true;
+const ok=sel===ans;
+const w=jpState.words[jpState.idx];
+document.querySelectorAll('#jp-quiz-options .quiz-option').forEach(b=>{
+b.disabled=true;
+if(b.textContent===ans)b.classList.add('correct');
+else if(b===el&&!ok)b.classList.add('wrong');
+});
+document.getElementById('jp-quiz-reading').style.display='block';
+if(ok){jpState.correct++;vibrate(10);}
+else{jpState.wrong++;vibrate([50,30,50]);if(jpState.phase==='normal')jpState.retryQueue.push({...w});}
+const fresh=await getJp(w.Sentence_JP);
+if(fresh){
+fresh.reviewCount=(fresh.reviewCount||0)+1;
+if(ok)fresh.correctCount=(fresh.correctCount||0)+1;
+if(!ok)fresh.consecutiveWrong=(fresh.consecutiveWrong||0)+1;else fresh.consecutiveWrong=0;
+calcNext(fresh,ok?2:0);
+await saveJp(fresh);
+}
+document.getElementById('jp-quiz-next').classList.remove('hidden');
+}
+
+function nextJpQuiz(){jpState.idx++;showJpQuizQ();}
+function confirmEndJpQuiz(){if(jpState.idx<jpState.words.length||jpState.retryQueue.length>0)showConfirm('학습 종료','남은 문제가 있습니다. 종료할까요?',endJpQuiz);else endJpQuiz();}
+function endJpQuiz(){
+const total=jpState.correct+jpState.wrong;if(!total){showPage('home');return;}
+document.getElementById('qc-total').textContent=total;
+document.getElementById('qc-correct').textContent=jpState.correct;
+document.getElementById('qc-wrong').textContent=jpState.wrong;
+document.getElementById('qc-acc').textContent=Math.round((jpState.correct/total)*100)+'%';
+showModal('complete-modal');updateHomeStats();
+}
+function updateJpQuizBookmarkBtn(){const w=jpState.words?.[jpState.idx];document.getElementById('jp-quiz-bookmark').textContent=w?.starred?'⭐ 해제':'☆ 북마크';}
+async function toggleJpQuizBookmark(){const w=jpState.words[jpState.idx];if(!w)return;const f=await getJp(w.Sentence_JP);if(!f)return;f.starred=!f.starred;await saveJp(f);w.starred=f.starred;updateJpQuizBookmarkBtn();showToast(f.starred?'⭐ 북마크':'북마크 해제');}
+
+// ========== Data ==========
+async function updateDataTable(){
+const ch=await getAllCh(),jp=await getAllJp();
+document.getElementById('ch-db-count').textContent=ch.length;
+document.getElementById('ch-table').innerHTML=ch.slice(0,50).map(w=>`<tr><td>${w.Simplified}<br><small style="color:var(--muted)">${w.Traditional||''}</small></td><td style="color:var(--chinese)">${w.Pinyin||''}</td><td>${w.Meaning_KO||''}</td></tr>`).join('');
+document.getElementById('jp-db-count').textContent=jp.length;
+document.getElementById('jp-table').innerHTML=jp.slice(0,50).map(w=>`<tr><td style="font-size:11px">${w.Sentence_JP||''}</td><td style="color:var(--japanese)">${w.Reading||''}</td><td>${w.Meaning_KO||''}</td></tr>`).join('');
+}
+
+async function handleExcel(file){
+if(!file)return;
+const data=await file.arrayBuffer();
+const wb=XLSX.read(data,{type:'array'});
+let chCount=0,jpCount=0;
+
+// Chinese sheet
+const chSheet=wb.Sheets['Chinese']||wb.Sheets['중국어'];
+if(chSheet){
+const json=XLSX.utils.sheet_to_json(chSheet,{header:1});
+if(json.length>1){
+const hdr=json[0].map(h=>(h||'').toString().trim().toLowerCase());
+const getIdx=n=>hdr.findIndex(h=>h.includes(n.toLowerCase()));
+const simpIdx=getIdx('simplified')===-1?getIdx('简'):getIdx('simplified');
+const tradIdx=getIdx('traditional')===-1?getIdx('繁'):getIdx('traditional');
+const pyIdx=getIdx('pinyin')===-1?getIdx('拼'):getIdx('pinyin');
+const mkIdx=getIdx('meaning_ko')===-1?getIdx('뜻'):getIdx('meaning_ko');
+const exChIdx=getIdx('example_ch');
+const exKoIdx=getIdx('example_ko');
+const topIdx=getIdx('topic');
+const hskIdx=getIdx('hsk');
+for(let i=1;i<json.length;i++){
+const r=json[i];if(!r)continue;
+const simp=simpIdx>=0&&r[simpIdx]?r[simpIdx].toString().trim():'';
+if(!simp)continue;
+const ex=await getCh(simp);
+const item={
+Simplified:simp,
+Traditional:tradIdx>=0?r[tradIdx]||'':'',
+Pinyin:pyIdx>=0?r[pyIdx]||'':'',
+Meaning_KO:mkIdx>=0?r[mkIdx]||'':'',
+Example_CH:exChIdx>=0?r[exChIdx]||'':'',
+Example_KO:exKoIdx>=0?r[exKoIdx]||'':'',
+Topic:topIdx>=0?r[topIdx]||'':'',
+HSK:hskIdx>=0?r[hskIdx]||'':'',
+starred:ex?.starred||false,
+reviewCount:ex?.reviewCount||0,
+correctCount:ex?.correctCount||0,
+consecutiveWrong:ex?.consecutiveWrong||0,
+stability:ex?.stability||null,
+difficulty:ex?.difficulty||null,
+nextReview:ex?.nextReview||null,
+lastReview:ex?.lastReview||null
+};
+await saveCh(item);chCount++;
+}}}
+
+// Japanese sheet
+const jpSheet=wb.Sheets['Japanese']||wb.Sheets['일본어'];
+if(jpSheet){
+const json=XLSX.utils.sheet_to_json(jpSheet,{header:1});
+if(json.length>1){
+const hdr=json[0].map(h=>(h||'').toString().trim().toLowerCase());
+const getIdx=n=>hdr.findIndex(h=>h.includes(n.toLowerCase()));
+const sentIdx=getIdx('sentence_jp')===-1?getIdx('文장'):getIdx('sentence_jp');
+const readIdx=getIdx('reading')===-1?getIdx('발음'):getIdx('reading');
+const mkIdx=getIdx('meaning_ko')===-1?getIdx('뜻'):getIdx('meaning_ko');
+const gramIdx=getIdx('grammar');
+const topIdx=getIdx('topic');
+const lvlIdx=getIdx('level');
+for(let i=1;i<json.length;i++){
+const r=json[i];if(!r)continue;
+const sent=sentIdx>=0&&r[sentIdx]?r[sentIdx].toString().trim():'';
+if(!sent)continue;
+const ex=await getJp(sent);
+const item={
+Sentence_JP:sent,
+Reading:readIdx>=0?r[readIdx]||'':'',
+Meaning_KO:mkIdx>=0?r[mkIdx]||'':'',
+Grammar:gramIdx>=0?r[gramIdx]||'':'',
+Topic:topIdx>=0?r[topIdx]||'':'',
+Level:lvlIdx>=0?r[lvlIdx]||'':'',
+starred:ex?.starred||false,
+reviewCount:ex?.reviewCount||0,
+correctCount:ex?.correctCount||0,
+consecutiveWrong:ex?.consecutiveWrong||0,
+stability:ex?.stability||null,
+difficulty:ex?.difficulty||null,
+nextReview:ex?.nextReview||null,
+lastReview:ex?.lastReview||null
+};
+await saveJp(item);jpCount++;
+}}}
+
+showToast(`✅ 중국어 ${chCount}개, 일본어 ${jpCount}개 로드!`);
+updateHomeStats();updateDataTable();
+}
+
+function clearAllData(){
+showConfirm('데이터 초기화','모든 학습 데이터가 삭제됩니다.',async()=>{
+const tx=db.transaction(['chinese','japanese'],'readwrite');
+tx.objectStore('chinese').clear();
+tx.objectStore('japanese').clear();
+await new Promise(r=>{tx.oncomplete=r;});
+showToast('🗑️ 초기화 완료');
+updateHomeStats();updateDataTable();
+});
+}
+
+// ========== Events ==========
+document.querySelectorAll('.chip-group').forEach(g=>{
+g.addEventListener('click',e=>{
+if(e.target.classList.contains('chip')){
+g.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+e.target.classList.add('active');
+}
+});
+});
+
+document.getElementById('ch-fc-card')?.addEventListener('click',flipChCard);
+document.getElementById('jp-fc-card')?.addEventListener('click',flipJpCard);
+
+// ========== Init ==========
+openDB().then(()=>{
+setTimeout(()=>{
+document.getElementById('splash').classList.add('hidden');
+updateHomeStats();
+updateDataTable();
+},800);
+}).catch(e=>console.error(e));
+</script>
+</body>
+</html>
