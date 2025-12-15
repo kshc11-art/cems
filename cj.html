@@ -936,3 +936,128 @@ updateDataTable();
 </script>
 </body>
 </html>
+document.getElementById('jp-quiz-bookmark').textContent=f.starred?'⭐ 해제':'☆ 북마크';showToast(f.starred?'⭐ 북마크':'북마크 해제');}
+
+// ========== 편집 ==========
+async function openChEdit(){
+const w=chState.words?.[chState.idx];if(!w)return;
+editingCh=await getCh(w.Simplified);if(!editingCh)return;
+document.getElementById('ch-edit-simp').value=editingCh.Simplified||'';
+document.getElementById('ch-edit-trad').value=editingCh.Traditional||'';
+document.getElementById('ch-edit-pinyin').value=editingCh.Pinyin||'';
+document.getElementById('ch-edit-meaning').value=editingCh.Meaning_KO||'';
+document.getElementById('ch-edit-ex-ch').value=editingCh.Example_CH||'';
+document.getElementById('ch-edit-ex-ko').value=editingCh.Example_KO||'';
+document.getElementById('ch-edit-hsk').value=editingCh.HSK||'';
+document.getElementById('ch-edit-review').textContent=editingCh.reviewCount||0;
+const acc=getAcc(editingCh);document.getElementById('ch-edit-acc').textContent=acc!==null?acc+'%':'-';
+document.getElementById('ch-edit-next').textContent=editingCh.nextReview?new Date(editingCh.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';
+document.getElementById('ch-edit-star').textContent=editingCh.starred?'⭐ 해제':'☆ 북마크';
+showModal('ch-edit-modal');
+}
+async function openChQuizEdit(){const w=chState.words?.[chState.idx];if(!w)return;editingCh=await getCh(w.Simplified);if(!editingCh)return;document.getElementById('ch-edit-simp').value=editingCh.Simplified||'';document.getElementById('ch-edit-trad').value=editingCh.Traditional||'';document.getElementById('ch-edit-pinyin').value=editingCh.Pinyin||'';document.getElementById('ch-edit-meaning').value=editingCh.Meaning_KO||'';document.getElementById('ch-edit-ex-ch').value=editingCh.Example_CH||'';document.getElementById('ch-edit-ex-ko').value=editingCh.Example_KO||'';document.getElementById('ch-edit-hsk').value=editingCh.HSK||'';document.getElementById('ch-edit-review').textContent=editingCh.reviewCount||0;const acc=getAcc(editingCh);document.getElementById('ch-edit-acc').textContent=acc!==null?acc+'%':'-';document.getElementById('ch-edit-next').textContent=editingCh.nextReview?new Date(editingCh.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';document.getElementById('ch-edit-star').textContent=editingCh.starred?'⭐ 해제':'☆ 북마크';showModal('ch-edit-modal');}
+
+async function saveChEdit(){if(!editingCh)return;editingCh.Traditional=document.getElementById('ch-edit-trad').value;editingCh.Pinyin=document.getElementById('ch-edit-pinyin').value;editingCh.Meaning_KO=document.getElementById('ch-edit-meaning').value;editingCh.Example_CH=document.getElementById('ch-edit-ex-ch').value;editingCh.Example_KO=document.getElementById('ch-edit-ex-ko').value;editingCh.HSK=document.getElementById('ch-edit-hsk').value;await saveCh(editingCh);closeModal('ch-edit-modal');showToast('✅ 저장 완료');}
+async function toggleChEditStar(){if(!editingCh)return;editingCh.starred=!editingCh.starred;await saveCh(editingCh);document.getElementById('ch-edit-star').textContent=editingCh.starred?'⭐ 해제':'☆ 북마크';showToast(editingCh.starred?'⭐ 북마크':'북마크 해제');}
+async function resetChStats(){if(!editingCh)return;showConfirm('통계 초기화','학습 통계를 초기화할까요?',async()=>{editingCh.reviewCount=0;editingCh.correctCount=0;editingCh.consecutiveWrong=0;editingCh.stability=null;editingCh.difficulty=null;editingCh.nextReview=null;editingCh.lastReview=null;await saveCh(editingCh);closeModal('ch-edit-modal');showToast('🔄 초기화 완료');});}
+async function deleteChItem(){if(!editingCh)return;showConfirm('삭제',`"${editingCh.Simplified}"을(를) 삭제할까요?`,async()=>{await deleteCh(editingCh.Simplified);closeModal('ch-edit-modal');showToast('🗑️ 삭제 완료');updateHomeStats();});}
+
+async function openJpEdit(){
+const w=jpState.words?.[jpState.idx];if(!w)return;
+editingJp=await getJp(w.Sentence_JP);if(!editingJp)return;
+document.getElementById('jp-edit-sent').value=editingJp.Sentence_JP||'';
+document.getElementById('jp-edit-reading').value=editingJp.Reading||'';
+document.getElementById('jp-edit-meaning').value=editingJp.Meaning_KO||'';
+document.getElementById('jp-edit-grammar').value=editingJp.Grammar||'';
+document.getElementById('jp-edit-level').value=editingJp.Level||'';
+document.getElementById('jp-edit-review').textContent=editingJp.reviewCount||0;
+const acc=getAcc(editingJp);document.getElementById('jp-edit-acc').textContent=acc!==null?acc+'%':'-';
+document.getElementById('jp-edit-next').textContent=editingJp.nextReview?new Date(editingJp.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';
+document.getElementById('jp-edit-star').textContent=editingJp.starred?'⭐ 해제':'☆ 북마크';
+showModal('jp-edit-modal');
+}
+async function openJpQuizEdit(){const w=jpState.words?.[jpState.idx];if(!w)return;editingJp=await getJp(w.Sentence_JP);if(!editingJp)return;document.getElementById('jp-edit-sent').value=editingJp.Sentence_JP||'';document.getElementById('jp-edit-reading').value=editingJp.Reading||'';document.getElementById('jp-edit-meaning').value=editingJp.Meaning_KO||'';document.getElementById('jp-edit-grammar').value=editingJp.Grammar||'';document.getElementById('jp-edit-level').value=editingJp.Level||'';document.getElementById('jp-edit-review').textContent=editingJp.reviewCount||0;const acc=getAcc(editingJp);document.getElementById('jp-edit-acc').textContent=acc!==null?acc+'%':'-';document.getElementById('jp-edit-next').textContent=editingJp.nextReview?new Date(editingJp.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';document.getElementById('jp-edit-star').textContent=editingJp.starred?'⭐ 해제':'☆ 북마크';showModal('jp-edit-modal');}
+
+async function saveJpEdit(){if(!editingJp)return;editingJp.Reading=document.getElementById('jp-edit-reading').value;editingJp.Meaning_KO=document.getElementById('jp-edit-meaning').value;editingJp.Grammar=document.getElementById('jp-edit-grammar').value;editingJp.Level=document.getElementById('jp-edit-level').value;await saveJp(editingJp);closeModal('jp-edit-modal');showToast('✅ 저장 완료');}
+async function toggleJpEditStar(){if(!editingJp)return;editingJp.starred=!editingJp.starred;await saveJp(editingJp);document.getElementById('jp-edit-star').textContent=editingJp.starred?'⭐ 해제':'☆ 북마크';showToast(editingJp.starred?'⭐ 북마크':'북마크 해제');}
+async function resetJpStats(){if(!editingJp)return;showConfirm('통계 초기화','학습 통계를 초기화할까요?',async()=>{editingJp.reviewCount=0;editingJp.correctCount=0;editingJp.consecutiveWrong=0;editingJp.stability=null;editingJp.difficulty=null;editingJp.nextReview=null;editingJp.lastReview=null;await saveJp(editingJp);closeModal('jp-edit-modal');showToast('🔄 초기화 완료');});}
+async function deleteJpItem(){if(!editingJp)return;showConfirm('삭제',`삭제할까요?`,async()=>{await deleteJp(editingJp.Sentence_JP);closeModal('jp-edit-modal');showToast('🗑️ 삭제 완료');updateHomeStats();});}
+
+// ========== 통계 ==========
+async function updateStats(){
+const ch=await getAllCh(),jp=await getAllJp();
+// 중국어 FSRS 분포
+let chNew=0,chLearn=0,chReview=0;
+ch.forEach(w=>{if(!w.reviewCount)chNew++;else if(w.fsrsState==='Relearning')chLearn++;else chReview++;});
+document.getElementById('ch-fsrs-dist').innerHTML=`<div class="stat-item"><div class="stat-value" style="color:var(--primary)">${chNew}</div><div class="stat-label">New</div></div><div class="stat-item"><div class="stat-value" style="color:var(--warning)">${chLearn}</div><div class="stat-label">Learning</div></div><div class="stat-item"><div class="stat-value" style="color:var(--success)">${chReview}</div><div class="stat-label">Review</div></div>`;
+// 중국어 정답률
+let chH=0,chM=0,chL=0;ch.forEach(w=>{const a=getAcc(w);if(a===null)return;if(a>=80)chH++;else if(a>=50)chM++;else chL++;});
+document.getElementById('ch-acc-high').textContent=chH;document.getElementById('ch-acc-mid').textContent=chM;document.getElementById('ch-acc-low').textContent=chL;
+// 중국어 HSK 분포
+const hskDist={};ch.forEach(w=>{const h=w.HSK||'미지정';hskDist[h]=(hskDist[h]||0)+1;});
+document.getElementById('ch-hsk-dist').innerHTML=Object.entries(hskDist).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<span style="display:inline-block;margin:4px 8px 4px 0;padding:4px 10px;background:rgba(239,68,68,.2);border-radius:12px;font-size:12px"><strong>${k}</strong>: ${v}</span>`).join('');
+// 일본어 FSRS 분포
+let jpNew=0,jpLearn=0,jpReview=0;
+jp.forEach(w=>{if(!w.reviewCount)jpNew++;else if(w.fsrsState==='Relearning')jpLearn++;else jpReview++;});
+document.getElementById('jp-fsrs-dist').innerHTML=`<div class="stat-item"><div class="stat-value" style="color:var(--primary)">${jpNew}</div><div class="stat-label">New</div></div><div class="stat-item"><div class="stat-value" style="color:var(--warning)">${jpLearn}</div><div class="stat-label">Learning</div></div><div class="stat-item"><div class="stat-value" style="color:var(--success)">${jpReview}</div><div class="stat-label">Review</div></div>`;
+// 일본어 정답률
+let jpH=0,jpM=0,jpL=0;jp.forEach(w=>{const a=getAcc(w);if(a===null)return;if(a>=80)jpH++;else if(a>=50)jpM++;else jpL++;});
+document.getElementById('jp-acc-high').textContent=jpH;document.getElementById('jp-acc-mid').textContent=jpM;document.getElementById('jp-acc-low').textContent=jpL;
+// 일본어 레벨 분포
+const lvlDist={};jp.forEach(w=>{const l=w.Level||'미지정';lvlDist[l]=(lvlDist[l]||0)+1;});
+document.getElementById('jp-level-dist').innerHTML=Object.entries(lvlDist).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<span style="display:inline-block;margin:4px 8px 4px 0;padding:4px 10px;background:rgba(139,92,246,.2);border-radius:12px;font-size:12px"><strong>${k}</strong>: ${v}</span>`).join('');
+}
+
+// ========== 데이터 ==========
+async function updateDataTable(){
+const ch=await getAllCh(),jp=await getAllJp();
+document.getElementById('ch-db-count').textContent=ch.length;
+document.getElementById('ch-table').innerHTML=ch.slice(0,100).map(w=>{const a=getAcc(w),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';return`<tr onclick="openChTableEdit('${w.Simplified.replace(/'/g,"\\'")}')" style="cursor:pointer"><td>${w.Simplified}<br><small style="color:var(--muted)">${w.Traditional||''}</small></td><td style="color:var(--chinese)">${w.Pinyin||''}</td><td>${w.Meaning_KO||''}</td><td style="${c}">${as}</td></tr>`;}).join('');
+document.getElementById('jp-db-count').textContent=jp.length;
+document.getElementById('jp-table').innerHTML=jp.slice(0,100).map(w=>{const a=getAcc(w),as=a!==null?a+'%':'-',c=a===null?'':a>=80?'color:var(--success)':a<50?'color:var(--danger)':'color:var(--warning)';return`<tr onclick="openJpTableEdit('${w.Sentence_JP.replace(/'/g,"\\'")}')" style="cursor:pointer"><td style="font-size:11px">${w.Sentence_JP||''}</td><td style="color:var(--japanese)">${w.Reading||''}</td><td>${w.Meaning_KO||''}</td><td style="${c}">${as}</td></tr>`;}).join('');
+}
+
+async function openChTableEdit(k){editingCh=await getCh(k);if(!editingCh)return;document.getElementById('ch-edit-simp').value=editingCh.Simplified||'';document.getElementById('ch-edit-trad').value=editingCh.Traditional||'';document.getElementById('ch-edit-pinyin').value=editingCh.Pinyin||'';document.getElementById('ch-edit-meaning').value=editingCh.Meaning_KO||'';document.getElementById('ch-edit-ex-ch').value=editingCh.Example_CH||'';document.getElementById('ch-edit-ex-ko').value=editingCh.Example_KO||'';document.getElementById('ch-edit-hsk').value=editingCh.HSK||'';document.getElementById('ch-edit-review').textContent=editingCh.reviewCount||0;const acc=getAcc(editingCh);document.getElementById('ch-edit-acc').textContent=acc!==null?acc+'%':'-';document.getElementById('ch-edit-next').textContent=editingCh.nextReview?new Date(editingCh.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';document.getElementById('ch-edit-star').textContent=editingCh.starred?'⭐ 해제':'☆ 북마크';showModal('ch-edit-modal');}
+async function openJpTableEdit(k){editingJp=await getJp(k);if(!editingJp)return;document.getElementById('jp-edit-sent').value=editingJp.Sentence_JP||'';document.getElementById('jp-edit-reading').value=editingJp.Reading||'';document.getElementById('jp-edit-meaning').value=editingJp.Meaning_KO||'';document.getElementById('jp-edit-grammar').value=editingJp.Grammar||'';document.getElementById('jp-edit-level').value=editingJp.Level||'';document.getElementById('jp-edit-review').textContent=editingJp.reviewCount||0;const acc=getAcc(editingJp);document.getElementById('jp-edit-acc').textContent=acc!==null?acc+'%':'-';document.getElementById('jp-edit-next').textContent=editingJp.nextReview?new Date(editingJp.nextReview).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}):'-';document.getElementById('jp-edit-star').textContent=editingJp.starred?'⭐ 해제':'☆ 북마크';showModal('jp-edit-modal');}
+
+async function handleExcel(file){
+if(!file)return;
+const data=await file.arrayBuffer();
+const wb=XLSX.read(data,{type:'array'});
+let chCount=0,jpCount=0;
+const chSheet=wb.Sheets['Chinese']||wb.Sheets['중국어'];
+if(chSheet){const json=XLSX.utils.sheet_to_json(chSheet,{header:1});if(json.length>1){const hdr=json[0].map(h=>(h||'').toString().trim().toLowerCase());const getIdx=n=>hdr.findIndex(h=>h.includes(n.toLowerCase()));const simpIdx=getIdx('simp')>=0?getIdx('simp'):getIdx('简');const tradIdx=getIdx('trad')>=0?getIdx('trad'):getIdx('繁');const pyIdx=getIdx('pinyin')>=0?getIdx('pinyin'):getIdx('拼');const mkIdx=getIdx('meaning_ko')>=0?getIdx('meaning_ko'):getIdx('뜻');const exChIdx=getIdx('example_ch');const exKoIdx=getIdx('example_ko');const topIdx=getIdx('topic');const hskIdx=getIdx('hsk');for(let i=1;i<json.length;i++){const r=json[i];if(!r)continue;const simp=simpIdx>=0&&r[simpIdx]?r[simpIdx].toString().trim():'';if(!simp)continue;const ex=await getCh(simp);const item={Simplified:simp,Traditional:tradIdx>=0?r[tradIdx]||'':'',Pinyin:pyIdx>=0?r[pyIdx]||'':'',Meaning_KO:mkIdx>=0?r[mkIdx]||'':'',Example_CH:exChIdx>=0?r[exChIdx]||'':'',Example_KO:exKoIdx>=0?r[exKoIdx]||'':'',Topic:topIdx>=0?r[topIdx]||'':'',HSK:hskIdx>=0?r[hskIdx]||'':'',starred:ex?.starred||false,reviewCount:ex?.reviewCount||0,correctCount:ex?.correctCount||0,consecutiveWrong:ex?.consecutiveWrong||0,stability:ex?.stability||null,difficulty:ex?.difficulty||null,nextReview:ex?.nextReview||null,lastReview:ex?.lastReview||null};await saveCh(item);chCount++;}}}
+const jpSheet=wb.Sheets['Japanese']||wb.Sheets['일본어'];
+if(jpSheet){const json=XLSX.utils.sheet_to_json(jpSheet,{header:1});if(json.length>1){const hdr=json[0].map(h=>(h||'').toString().trim().toLowerCase());const getIdx=n=>hdr.findIndex(h=>h.includes(n.toLowerCase()));const sentIdx=getIdx('sentence_jp')>=0?getIdx('sentence_jp'):getIdx('문장');const readIdx=getIdx('reading')>=0?getIdx('reading'):getIdx('발음');const mkIdx=getIdx('meaning_ko')>=0?getIdx('meaning_ko'):getIdx('뜻');const gramIdx=getIdx('grammar');const topIdx=getIdx('topic');const lvlIdx=getIdx('level');for(let i=1;i<json.length;i++){const r=json[i];if(!r)continue;const sent=sentIdx>=0&&r[sentIdx]?r[sentIdx].toString().trim():'';if(!sent)continue;const ex=await getJp(sent);const item={Sentence_JP:sent,Reading:readIdx>=0?r[readIdx]||'':'',Meaning_KO:mkIdx>=0?r[mkIdx]||'':'',Grammar:gramIdx>=0?r[gramIdx]||'':'',Topic:topIdx>=0?r[topIdx]||'':'',Level:lvlIdx>=0?r[lvlIdx]||'':'',starred:ex?.starred||false,reviewCount:ex?.reviewCount||0,correctCount:ex?.correctCount||0,consecutiveWrong:ex?.consecutiveWrong||0,stability:ex?.stability||null,difficulty:ex?.difficulty||null,nextReview:ex?.nextReview||null,lastReview:ex?.lastReview||null};await saveJp(item);jpCount++;}}}
+showToast(`✅ 중국어 ${chCount}개, 일본어 ${jpCount}개 로드!`);
+updateHomeStats();updateDataTable();
+}
+
+async function exportData(){
+const ch=await getAllCh(),jp=await getAllJp();
+const wb=XLSX.utils.book_new();
+if(ch.length){const ws=XLSX.utils.json_to_sheet(ch);XLSX.utils.book_append_sheet(wb,ws,'Chinese');}
+if(jp.length){const ws=XLSX.utils.json_to_sheet(jp);XLSX.utils.book_append_sheet(wb,ws,'Japanese');}
+XLSX.writeFile(wb,'CJ_Vocab_Export.xlsx');
+showToast('📥 내보내기 완료');
+}
+
+function clearAllData(){
+showConfirm('데이터 초기화','모든 학습 데이터가 삭제됩니다.',async()=>{
+const tx=db.transaction(['chinese','japanese'],'readwrite');
+tx.objectStore('chinese').clear();tx.objectStore('japanese').clear();
+await new Promise(r=>{tx.oncomplete=r;});
+showToast('🗑️ 초기화 완료');updateHomeStats();updateDataTable();
+});
+}
+
+// ========== Events ==========
+document.querySelectorAll('.chip-group').forEach(g=>{g.addEventListener('click',e=>{if(e.target.classList.contains('chip')){g.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));e.target.classList.add('active');}});});
+document.getElementById('ch-fc-card')?.addEventListener('click',flipChCard);
+document.getElementById('jp-fc-card')?.addEventListener('click',flipJpCard);
+
+// ========== Init ==========
+openDB().then(()=>{setTimeout(()=>{document.getElementById('splash').classList.add('hidden');updateHomeStats();updateDataTable();},800);}).catch(e=>console.error(e));
+</script>
+</body>
+</html>
