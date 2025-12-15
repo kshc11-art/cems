@@ -1078,8 +1078,10 @@ async function startWeakStudy(){const items=currentWeakType==='phrasal'?await ge
 
 // === 플래시카드 (핵심) ===
 function startFC(items,all,type){
+console.log('startFC called:', {itemsCount: items.length, type, firstItem: items[0]});
 if(fcState.timer)clearInterval(fcState.timer);
 fcState={words:[...items],idx:0,flipped:false,start:Date.now(),timer:null,stats:{again:0,hard:0,good:0,easy:0},transitioning:false,retryQueue:[],phase:'normal',type,savedToWrong:0,allWords:all};
+console.log('fcState.words[0]:', fcState.words[0]);
 document.getElementById('fc-total').textContent=items.length;
 document.getElementById('fc-current').textContent='1';
 document.getElementById('fc-progress').style.width='0%';
@@ -1090,6 +1092,7 @@ showPage('flashcard');showCard();startTimer();updateStreak();
 
 function showCard(){
 const item=fcState.words[fcState.idx];
+console.log('showCard item:',item); // 디버깅
 if(!item){
   if(fcState.retryQueue.length>0){
     fcState.words=[...fcState.retryQueue];fcState.retryQueue=[];fcState.idx=0;fcState.phase='retry';
@@ -1118,10 +1121,12 @@ document.getElementById('fc-current').textContent=fcState.idx+1;
 if(fcState.phase==='retry')document.getElementById('fc-retry-count').textContent=fcState.words.length-fcState.idx;
 // 4. 앞면
 if(fcState.type==='phrasal'){
-  document.getElementById('fc-word').textContent=item.Phrasal_Verb||'';
+  document.getElementById('fc-word').textContent=item.Phrasal_Verb||'(구동사)';
   document.getElementById('fc-tags').innerHTML=`<span class="tag tag-phrasal">${item.Particle||''}</span><span class="tag tag-cat">${item.Category||''}</span>`;
 }else{
-  document.getElementById('fc-word').textContent=displayWord(item.word)||'';
+  const wordText=displayWord(item.word)||item.word||'(단어 없음)';
+  console.log('Displaying word:',wordText); // 디버깅
+  document.getElementById('fc-word').textContent=wordText;
   document.getElementById('fc-tags').innerHTML=`<span class="tag tag-pos">${item.POS||'n/a'}</span><span class="tag tag-level">Lv.${item.Difficulty||2}</span><span class="tag tag-cat">${item.L1||'General'}</span>`;
 }
 if(document.getElementById('setting-tts')?.checked)setTimeout(()=>speakWord(),300);
@@ -2273,14 +2278,7 @@ updateHomeStats();
 }
 async function openExprFCEdit(){
 const e=exprState.words[exprState.idx];if(!e)return;
-const fresh=await getExpr(e.Expression);if(!fresh)return;
-const newMeaning=prompt('뜻 수정:',getMKO(fresh)||'');
-if(newMeaning!==null&&newMeaning!==getMKO(fresh)){
-fresh.Meaning_KO=newMeaning;
-await saveExpr(fresh);
-e.Meaning_KO=newMeaning;
-showToast('✅ 수정 완료');
-}
+await openExprEditModal(e.Expression);
 }
 // 표현 5지선다 퀴즈
 function showExprQuizQ(){
@@ -2400,14 +2398,7 @@ showToast(fresh.starred?'⭐ 북마크 추가':'북마크 해제');
 }
 async function openExprQuizEdit(){
 const e=exprState.words[exprState.idx];if(!e)return;
-const fresh=await getExpr(e.Expression);if(!fresh)return;
-const newMeaning=prompt('뜻 수정:',getMKO(fresh)||'');
-if(newMeaning!==null&&newMeaning!==getMKO(fresh)){
-fresh.Meaning_KO=newMeaning;
-await saveExpr(fresh);
-e.Meaning_KO=newMeaning;
-showToast('✅ 수정 완료');
-}
+await openExprEditModal(e.Expression);
 }
 function escapeHtml(t){return(t||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
 // 표현 검색
